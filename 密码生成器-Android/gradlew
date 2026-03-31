@@ -1,0 +1,30 @@
+#!/bin/sh
+# Gradle wrapper script for Unix/Linux/macOS
+
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+
+# Determine the Java command to use to start the JVM
+if [ -n "$JAVA_HOME" ] ; then
+    JAVACMD="$JAVA_HOME/bin/java"
+else
+    JAVACMD="java"
+fi
+
+# Increase the maximum file descriptors if we can
+MAX_FD="maximum"
+MAX_FD_LIMIT=`ulimit -H -n 2>/dev/null || :`
+if [ "$?" -eq "0" ] && [ -n "$MAX_FD_LIMIT" ]; then
+    if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+        MAX_FD="$MAX_FD_LIMIT"
+    fi
+    ulimit -n $MAX_FD
+fi
+
+# Collect all arguments for the java command
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+exec "$JAVACMD" \
+    -classpath "$CLASSPATH" \
+    org.gradle.wrapper.GradleWrapperMain \
+    "$@"

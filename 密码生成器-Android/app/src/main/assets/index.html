@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0d47a1">
+    <title>密码生成器</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Noto Sans CJK SC', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        body {
+            background: linear-gradient(160deg, #0d47a1 0%, #1976d2 60%, #42a5f5 100%);
+            min-height: 100vh;
+            min-height: -webkit-fill-available;
+            display: flex;
+            flex-direction: column;
+            padding: env(safe-area-inset-top, 20px) 16px env(safe-area-inset-bottom, 20px);
+        }
+
+        .container {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            width: 100%;
+            max-width: 480px;
+            margin: auto;
+            padding: 28px 20px 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .header-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .company-name {
+            color: #0d47a1;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .app-subtitle {
+            color: #1565c0;
+            font-size: 13px;
+            margin-top: 3px;
+            opacity: 0.8;
+        }
+
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e3f2fd, transparent);
+            margin: 16px 0;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: #37474f;
+            font-size: 14px;
+            letter-spacing: 0.2px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #e3f2fd;
+            color: #0d47a1;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e8ecef;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #f8fafc;
+            color: #263238;
+            transition: border-color 0.2s, background 0.2s;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #1976d2;
+            background: #fff;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+        }
+
+        .btn-generate {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            margin-top: 6px;
+            cursor: pointer;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(21,101,192,0.35);
+            transition: transform 0.15s, box-shadow 0.15s;
+            -webkit-appearance: none;
+        }
+
+        .btn-generate:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(21,101,192,0.25);
+        }
+
+        /* 结果区域 */
+        .results {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-card {
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .result-card.normal {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border: 2px solid #1976d2;
+        }
+
+        .result-card.ultimate {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border: 2px solid #e53935;
+        }
+
+        .result-label {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .result-card.normal .result-label { color: #1565c0; }
+        .result-card.ultimate .result-label { color: #c62828; }
+
+        .result-value {
+            font-family: 'Courier New', 'Roboto Mono', monospace;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            word-break: break-all;
+            margin-bottom: 12px;
+        }
+
+        .result-card.normal .result-value { color: #0d47a1; }
+        .result-card.ultimate .result-value { color: #b71c1c; }
+
+        .btn-copy {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 9px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s, background 0.2s;
+            -webkit-appearance: none;
+        }
+
+        .btn-copy.normal { background: #1976d2; color: #fff; }
+        .btn-copy.ultimate { background: #e53935; color: #fff; }
+
+        .btn-copy:active { transform: scale(0.97); }
+
+        .btn-copy.copied { background: #43a047 !important; }
+
+        .footer {
+            text-align: center;
+            margin-top: 22px;
+            color: rgba(255,255,255,0.65);
+            font-size: 11px;
+        }
+
+        /* 错误提示 */
+        .error-tip {
+            color: #e53935;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+        .error-tip.show { display: block; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <span class="header-icon">🔐</span>
+        <div class="company-name">密码生成器</div>
+        <div class="app-subtitle">新谷川智能科技有限公司</div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="input-group">
+        <label for="code">验证码（16进制）</label>
+        <div class="input-wrap">
+            <input type="text" id="code" placeholder="例如: 499602D2"
+                   value="499602D2" autocomplete="off"
+                   autocorrect="off" autocapitalize="characters" spellcheck="false">
+            <span class="badge">HEX</span>
+        </div>
+        <div class="error-tip" id="err-code">请输入有效的16进制（0-9, A-F）</div>
+    </div>
+
+    <div class="input-group">
+        <label for="days">天数（1 - 999）</label>
+        <input type="number" id="days" placeholder="请输入天数"
+               value="123" min="1" max="999" inputmode="numeric">
+        <div class="error-tip" id="err-days">天数范围为 1 到 999</div>
+    </div>
+
+    <!-- 隐藏密钥 -->
+    <input type="hidden" id="key1" value="456">
+    <input type="hidden" id="key2" value="789">
+
+    <button class="btn-generate" id="btn-generate" onclick="generatePassword()">
+        生 成 密 码
+    </button>
+
+    <div class="results" id="results">
+        <div class="result-card normal">
+            <div class="result-label">普通密码（当前天数）</div>
+            <div class="result-value" id="pwd-normal">—</div>
+            <button class="btn-copy normal" id="btn-copy-normal"
+                    onclick="copyPwd('normal')">复制普通密码</button>
+        </div>
+
+        <div class="result-card ultimate">
+            <div class="result-label">终极密码（永久有效）</div>
+            <div class="result-value" id="pwd-ultimate">—</div>
+            <button class="btn-copy ultimate" id="btn-copy-ultimate"
+                    onclick="copyPwd('ultimate')">复制终极密码</button>
+        </div>
+    </div>
+</div>
+
+<div class="footer">© 2024 新谷川智能科技有限公司</div>
+
+<script>
+// ─── 算法核心 ───────────────────────────────────────────────
+
+function hexToDec10(hex) {
+    hex = hex.replace(/^0x/i, '');
+    const n = parseInt(hex, 16).toString();
+    return n.length >= 10 ? n.slice(-10) : n.padStart(10, '0');
+}
+
+function replaceDigits(num, map) {
+    return num.toString().padStart(3, '0')
+        .split('').map(d => map[+d]).join('');
+}
+
+function calcPassword(hexCode, days, S2, S3) {
+    const dec = hexToDec10(hexCode);
+    const parts = [];
+    for (let i = 0; i < 10; i += 2) parts.push(dec.slice(i, i + 2));
+    const all = [...parts, ...parts];
+    const map = {};
+    for (let i = 0; i < 10; i++) map[i] = all[i];
+
+    const S1 = 999 - days;
+    const n1 = parseInt(replaceDigits(S1, map));
+    const n2 = parseInt(replaceDigits(S2, map));
+    const n3 = parseInt(replaceDigits(S3, map));
+    const C4 = Math.floor((n1 + n2 + n3) / 3);
+    const final = 1000000000 + (C4 + S2 + S3) * 1000 + S1;
+    return final.toString(16).toUpperCase();
+}
+
+// ─── UI 逻辑 ────────────────────────────────────────────────
+
+function generatePassword() {
+    const hexInput = document.getElementById('code');
+    const daysInput = document.getElementById('days');
+    const errCode = document.getElementById('err-code');
+    const errDays = document.getElementById('err-days');
+
+    const hex = hexInput.value.trim().toUpperCase();
+    const days = parseInt(daysInput.value);
+    const S2 = parseInt(document.getElementById('key1').value);
+    const S3 = parseInt(document.getElementById('key2').value);
+
+    let ok = true;
+
+    if (!hex || !/^[0-9A-F]+$/.test(hex)) {
+        errCode.classList.add('show');
+        hexInput.style.borderColor = '#e53935';
+        ok = false;
+    } else {
+        errCode.classList.remove('show');
+        hexInput.style.borderColor = '';
+    }
+
+    if (!days || days < 1 || days > 999) {
+        errDays.classList.add('show');
+        daysInput.style.borderColor = '#e53935';
+        ok = false;
+    } else {
+        errDays.classList.remove('show');
+        daysInput.style.borderColor = '';
+    }
+
+    if (!ok) return;
+
+    const normal   = calcPassword(hex, days, S2, S3);
+    const ultimate = calcPassword(hex, 0,    S2, S3);
+
+    document.getElementById('pwd-normal').textContent   = normal;
+    document.getElementById('pwd-ultimate').textContent = ultimate;
+
+    const results = document.getElementById('results');
+    results.classList.remove('show');
+    void results.offsetWidth; // reflow
+    results.classList.add('show');
+}
+
+// ─── 复制逻辑（优先 Android 原生接口，降级到 navigator.clipboard）
+
+function copyPwd(type) {
+    const id = type === 'normal' ? 'pwd-normal' : 'pwd-ultimate';
+    const btnId = type === 'normal' ? 'btn-copy-normal' : 'btn-copy-ultimate';
+    const text = document.getElementById(id).textContent;
+    if (!text || text === '—') return;
+
+    const btn = document.getElementById(btnId);
+    const orig = btn.textContent;
+
+    const done = () => {
+        btn.textContent = '✓ 已复制！';
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.textContent = orig;
+            btn.classList.remove('copied');
+        }, 2000);
+    };
+
+    // Android 原生接口（由 MainActivity 注入）
+    if (window.AndroidBridge && window.AndroidBridge.copyToClipboard) {
+        window.AndroidBridge.copyToClipboard(text);
+        done();
+        return;
+    }
+
+    // 现代浏览器
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(done).catch(() => fallback(text, done));
+        return;
+    }
+
+    fallback(text, done);
+}
+
+function fallback(text, callback) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try { document.execCommand('copy'); callback(); } catch(e) {}
+    document.body.removeChild(ta);
+}
+
+// ─── 回车触发 ─────────────────────────────────────────────
+
+['code', 'days'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); generatePassword(); }
+    });
+});
+
+// 页面加载后自动生成示例
+window.addEventListener('load', () => setTimeout(generatePassword, 200));
+</script>
+</body>
+</html>
